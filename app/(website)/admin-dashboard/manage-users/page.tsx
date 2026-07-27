@@ -126,7 +126,9 @@ export default function ManageUsersPage() {
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [isStatusModalOpen, setIsStatusModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [actionType, setActionType] = useState<"suspend" | "unsuspend" | "delete">("suspend");
+  const [actionType, setActionType] = useState<
+    "suspend" | "unsuspend" | "delete" | "restore"
+  >("suspend");
   const { data: session } = useSession();
   const token = session?.user?.accessToken;
 
@@ -204,6 +206,12 @@ export default function ManageUsersPage() {
   const handleDeleteUser = (userId: string) => {
     setSelectedUserId(userId);
     setActionType("delete");
+    setIsDeleteModalOpen(true);
+  };
+
+  const handleRestoreUser = (userId: string) => {
+    setSelectedUserId(userId);
+    setActionType("restore");
     setIsDeleteModalOpen(true);
   };
 
@@ -354,6 +362,7 @@ export default function ManageUsersPage() {
                     createdAt: string | number | Date;
                     userType: string;
                     isActive: boolean;
+                    isDelete: boolean;
                   }) => (
                     <tr
                       key={user._id}
@@ -403,16 +412,22 @@ export default function ManageUsersPage() {
                       <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-base font-medium text-[#252525]">
                         <span
                           className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            user.isActive
+                            user.isDelete
+                              ? "bg-gray-200 text-gray-800"
+                              : user.isActive
                               ? "bg-green-100 text-green-800"
                               : "bg-red-100 text-red-800"
                           }`}
                         >
-                          {user.isActive ? "Active" : "Suspended"}
+                          {user.isDelete
+                            ? "Deleted"
+                            : user.isActive
+                              ? "Active"
+                              : "Suspended"}
                         </span>
                       </td>
                       <td className="p-4 align-middle [&:has([role=checkbox])]:pr-0 text-right text-base font-medium text-[#252525]">
-                        <DropdownMenu>
+                        <DropdownMenu modal={false}>
                           <DropdownMenuTrigger asChild>
                             <Button
                               variant="ghost"
@@ -429,7 +444,14 @@ export default function ManageUsersPage() {
                             >
                               View Profile
                             </DropdownMenuItem>
-                            {user.isActive ? (
+                            {user.isDelete ? (
+                              <DropdownMenuItem
+                                onClick={() => handleRestoreUser(String(user._id))}
+                                className="text-green-600"
+                              >
+                                Restore
+                              </DropdownMenuItem>
+                            ) : user.isActive ? (
                               <DropdownMenuItem
                                 onClick={() => handleToggleStatus(String(user._id), user.isActive)}
                                 className="text-red-600"
@@ -444,12 +466,14 @@ export default function ManageUsersPage() {
                                 Unsuspend
                               </DropdownMenuItem>
                             )}
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteUser(String(user._id))}
-                              className="text-red-600"
-                            >
-                              Delete
-                            </DropdownMenuItem>
+                            {!user.isDelete && (
+                              <DropdownMenuItem
+                                onClick={() => handleDeleteUser(String(user._id))}
+                                className="text-red-600"
+                              >
+                                Delete
+                              </DropdownMenuItem>
+                            )}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
@@ -505,7 +529,13 @@ export default function ManageUsersPage() {
               </div>
               <div>
                 <Label>Active Status</Label>
-                <p>{userDetails.isActive ? "Active" : "Deleted"}</p>
+                <p>
+                  {userDetails.isDelete
+                    ? "Deleted"
+                    : userDetails.isActive
+                      ? "Active"
+                      : "Suspended"}
+                </p>
               </div>
               <div>
                 <Label>Created At</Label>
@@ -568,10 +598,18 @@ export default function ManageUsersPage() {
       <Dialog open={isDeleteModalOpen} onOpenChange={setIsDeleteModalOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm User Deletion</DialogTitle>
+            <DialogTitle>
+              {actionType === "restore"
+                ? "Confirm User Restore"
+                : "Confirm User Deletion"}
+            </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
-            <p>Are you sure you want to delete this user? This action cannot be undone.</p>
+            <p>
+              {actionType === "restore"
+                ? "Are you sure you want to restore this user account?"
+                : "Are you sure you want to delete this user account?"}
+            </p>
           </div>
           <DialogFooter>
             <Button
@@ -581,11 +619,22 @@ export default function ManageUsersPage() {
               Cancel
             </Button>
             <Button
-              variant="destructive"
+              variant={actionType === "restore" ? "default" : "destructive"}
               onClick={confirmDelete}
               disabled={deleteUserMutation.isPending}
+              className={
+                actionType === "restore"
+                  ? "bg-green-600 hover:bg-green-700 text-white"
+                  : ""
+              }
             >
-              {deleteUserMutation.isPending ? "Deleting..." : "Delete"}
+              {deleteUserMutation.isPending
+                ? actionType === "restore"
+                  ? "Restoring..."
+                  : "Deleting..."
+                : actionType === "restore"
+                  ? "Restore"
+                  : "Delete"}
             </Button>
           </DialogFooter>
         </DialogContent>
