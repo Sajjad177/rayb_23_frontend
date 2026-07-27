@@ -210,6 +210,34 @@ const AddBusiness = () => {
       instrumentFamily: getInstrumentFamilyByName(instrument),
     }));
 
+  const buildMusicLessonsPayload = () => {
+    const lessonsByGroup = new Map(
+      selectedMusic
+        .filter((lesson) => lesson.selectedInstrumentsGroupMusic)
+        .map((lesson) => [
+          lesson.selectedInstrumentsGroupMusic as string,
+          lesson,
+        ]),
+    );
+
+    return selectedInstrumentsMusic.map((instrument) => {
+      const existingLesson = lessonsByGroup.get(instrument);
+
+      return {
+        newInstrumentName:
+          existingLesson?.newInstrumentName || `${instrument} Lessons`,
+        pricingType: existingLesson?.pricingType || "hourly",
+        price: existingLesson?.price ?? "",
+        minPrice: existingLesson?.minPrice ?? "",
+        maxPrice: existingLesson?.maxPrice ?? "",
+        selectedInstrumentsGroupMusic: instrument,
+        instrumentFamily:
+          existingLesson?.instrumentFamily ||
+          getInstrumentFamilyByName(instrument),
+      };
+    });
+  };
+
   // buy / cell/ trade / rent related state
   const [selectedOptions, setSelectedOptions] = useState<
     Record<OptionKey, boolean>
@@ -395,15 +423,7 @@ const AddBusiness = () => {
       },
       selectedInstruments: buildSelectedInstrumentsPayload(),
       services: buildServicesPayload(),
-      musicLessons: selectedMusic.map((lesson) => ({
-        newInstrumentName: lesson.newInstrumentName,
-        pricingType: lesson.pricingType,
-        price: lesson.price,
-        minPrice: lesson.minPrice,
-        maxPrice: lesson.maxPrice,
-        selectedInstrumentsGroupMusic: lesson.selectedInstrumentsGroupMusic,
-        instrumentFamily: lesson.instrumentFamily || getInstrumentFamilyByName(lesson.selectedInstrumentsGroupMusic),
-      })),
+      musicLessons: buildMusicLessonsPayload(),
       businessHours: businessHours.map((hour) => ({
         day: hour.day,
         startTime: hour.startTime,
@@ -415,9 +435,9 @@ const AddBusiness = () => {
       buyInstruments: selectedOptions.buy,
       sellInstruments: selectedOptions.sell,
       tradeInstruments: selectedOptions?.trade,
-      rentInstruments: selectedOptions?.trade,
+      rentInstruments: selectedOptions?.rent,
       isMusicLessons: selectedOptions?.music,
-      offerMusicLessons: selectedMusic.length > 0,
+      offerMusicLessons: selectedInstrumentsMusic.length > 0,
       status: "pending",
       isVerified: false,
       ...additionalData,
@@ -527,15 +547,7 @@ const AddBusiness = () => {
       },
       selectedInstruments: buildSelectedInstrumentsPayload(),
       services: buildServicesPayload(),
-      musicLessons: selectedMusic.map((lesson) => ({
-        newInstrumentName: lesson.newInstrumentName,
-        pricingType: lesson.pricingType,
-        price: lesson.price,
-        minPrice: lesson.minPrice,
-        maxPrice: lesson.maxPrice,
-        selectedInstrumentsGroupMusic: lesson.selectedInstrumentsGroupMusic,
-        instrumentFamily: lesson.instrumentFamily || getInstrumentFamilyByName(lesson.selectedInstrumentsGroupMusic),
-      })),
+      musicLessons: buildMusicLessonsPayload(),
       businessHours: businessHours.map((hour) => ({
         day: hour.day,
         startTime: hour.startTime,
@@ -549,7 +561,7 @@ const AddBusiness = () => {
       tradeInstruments: selectedOptions.trade,
       rentInstruments: selectedOptions.rent,
       isMusicLessons: selectedOptions.music,
-      offerMusicLessons: selectedMusic.length > 0,
+      offerMusicLessons: selectedInstrumentsMusic.length > 0,
     };
 
     formData.append("data", JSON.stringify(businessData));
