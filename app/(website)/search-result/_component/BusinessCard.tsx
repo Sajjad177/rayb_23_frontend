@@ -71,7 +71,7 @@ const hasGoogleReviews = (reviews: Review[] = []) => {
 
 const BusinessCard = ({ business }: { business: Business }) => {
   console.log("all business", business);
-  const router = useRouter()  ;
+  const router = useRouter();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = business?.images || [];
 
@@ -165,7 +165,7 @@ const BusinessCard = ({ business }: { business: Business }) => {
     }
   };
 
-  const pricedServices = business?.services?.filter(isPricedService) || [];
+  const allServices = business?.services || [];
   const hasActiveServiceFilter =
     search.trim() !== "" ||
     serviceTag.length > 0 ||
@@ -173,7 +173,7 @@ const BusinessCard = ({ business }: { business: Business }) => {
     maxPriceRange.trim() !== "";
 
   // Filter services based on search, serviceTag, and price range
-  const filteredServices = pricedServices.filter((service) => {
+  const filteredServices = allServices.filter((service) => {
     const serviceName = service?.newInstrumentName?.toLowerCase() || "";
 
     if (search.trim() && !serviceName.includes(search.toLowerCase().trim())) {
@@ -189,12 +189,19 @@ const BusinessCard = ({ business }: { business: Business }) => {
       return false;
     }
 
-    return matchesPriceRange(service);
+    const hasPriceRangeFilter =
+      minPriceRange.trim() !== "" || maxPriceRange.trim() !== "";
+
+    if (!hasPriceRangeFilter) {
+      return true;
+    }
+
+    return isPricedService(service) && matchesPriceRange(service);
   });
 
   const displayedServices = hasActiveServiceFilter
     ? filteredServices
-    : pricedServices;
+    : allServices;
 
   return (
     <div>
@@ -325,12 +332,14 @@ const BusinessCard = ({ business }: { business: Business }) => {
                           key={index}
                         >
                           <span>{service.newInstrumentName}</span>
-                          <span>{getDisplayPrice(service)}</span>
+                          {getDisplayPrice(service) ? (
+                            <span>{getDisplayPrice(service)}</span>
+                          ) : null}
                         </button>
                       ))
                     ) : (
                       <span className="text-sm text-gray-500">
-                        No priced services available
+                        No services available
                       </span>
                     )}
                   </div>
