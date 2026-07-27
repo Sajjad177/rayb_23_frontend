@@ -137,7 +137,6 @@ const BusinessInfo = () => {
         offersParams ? `&${offersParams}` : ""
       }`;
 
-      console.log("API URL:", url); // Debug log
 
       const res = await fetch(url);
       const data = await res.json();
@@ -154,6 +153,8 @@ const BusinessInfo = () => {
       return data;
     },
   });
+
+
 
   const totalPages = Math.ceil((allBusiness?.pagination?.total || 0) / limit);
 

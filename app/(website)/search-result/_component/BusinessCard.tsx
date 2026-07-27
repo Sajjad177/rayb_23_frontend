@@ -70,7 +70,8 @@ const hasGoogleReviews = (reviews: Review[] = []) => {
 };
 
 const BusinessCard = ({ business }: { business: Business }) => {
-  const router = useRouter();
+  console.log("all business", business);
+  const router = useRouter()  ;
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const images = business?.images || [];
 

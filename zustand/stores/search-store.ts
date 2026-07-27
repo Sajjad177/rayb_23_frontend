@@ -64,7 +64,7 @@ const initialState: Pick<
   offers: false,
   maxPriceRange: "",
   open: false,
-  sort: "high-to-low",
+  sort: "default",
   search: "",
   selectInstrument: false,
   selectService: false,

@@ -63,21 +63,22 @@ const ResultsFiltering = ({
       <div>
         <h1 className="text-gray-500">Sort by</h1>
         <Select
-          value={sort || "high-to-low"}
+          value={sort || "default"}
           onValueChange={(value) => setSort(value)}
         >
           <SelectTrigger className="border-none focus:ring-offset-0 p-0 h-5 focus:ring-0 shadow-none justify-normal gap-2 focus:border-0">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
+            <SelectItem value="default">Default</SelectItem>
             <SelectItem value="rating-high-to-low">
               Rated High to Low
             </SelectItem>
             <SelectItem value="rating-low-to-high">
               Rated Low to High
             </SelectItem>
-            <SelectItem value="low-to-high">Price Low to High</SelectItem>
-            <SelectItem value="high-to-low">Price High to Low</SelectItem>
+            <SelectItem value="high-to-low">Price Low to High</SelectItem>
+            <SelectItem value="low-to-high">Price High to Low</SelectItem>
           </SelectContent>
         </Select>
       </div>
