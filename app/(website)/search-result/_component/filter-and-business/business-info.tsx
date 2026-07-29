@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import BusinessCard from "../BusinessCard";
 import BusinessCardSkeleton from "./BusinessCardSkeleton";
@@ -44,6 +45,10 @@ interface Business {
 }
 
 const BusinessInfo = () => {
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const [page, setPage] = React.useState(1);
   const limit = 5;
 
@@ -57,10 +62,49 @@ const BusinessInfo = () => {
     open,
     sort,
     search,
+    setSort,
   } = useFilterStore();
 
   const { location } = useSearchStore();
   const searchLocation = location || "";
+  const urlSort = searchParams.get("sort");
+
+  React.useEffect(() => {
+    if (
+      urlSort &&
+      [
+        "default",
+        "rating-high-to-low",
+        "rating-low-to-high",
+        "low-to-high",
+        "high-to-low",
+      ].includes(urlSort) &&
+      urlSort !== sort
+    ) {
+      setSort(urlSort);
+    }
+  }, [setSort, sort, urlSort]);
+
+  const handleSortChange = React.useCallback(
+    (value: string) => {
+      setPage(1);
+      setSort(value);
+
+      const params = new URLSearchParams(searchParams.toString());
+      if (value === "default") {
+        params.delete("sort");
+      } else {
+        params.set("sort", value);
+      }
+
+      const queryString = params.toString();
+      router.replace(queryString ? `${pathname}?${queryString}` : pathname, {
+        scroll: false,
+      });
+      queryClient.invalidateQueries({ queryKey: ["get-all-business"] });
+    },
+    [pathname, queryClient, router, searchParams, setSort],
+  );
 
   React.useEffect(() => {
     setPage(1);
@@ -160,7 +204,10 @@ const BusinessInfo = () => {
 
   return (
     <div>
-      <ResultsFiltering allBusiness={allBusiness} />
+      <ResultsFiltering
+        allBusiness={allBusiness}
+        onSortChange={handleSortChange}
+      />
       <TagsAndOpenNow />
 
       <div className="space-y-6 mt-8">
