@@ -285,8 +285,8 @@ export default function BdDashComponent() {
               {newMessages.map(
                 (
                   message: {
-                    userId: { name: string; imageLink: string };
-                    lastMessage: { date: string; message: string };
+                    userId?: { name?: string; imageLink?: string } | null;
+                    lastMessage?: { date?: string; message?: string } | null;
                   },
                   index: number,
                 ) => (
@@ -299,7 +299,7 @@ export default function BdDashComponent() {
                         <Avatar className="h-10 w-10">
                           <AvatarImage src={message?.userId?.imageLink} />
                           <AvatarFallback className="bg-gray-500 text-white text-xs uppercase">
-                            {message?.userId?.name
+                            {(message?.userId?.name || "")
                               .split(' ')
                               .map((n: string) => n[0])
                               .join('')}
@@ -313,14 +313,16 @@ export default function BdDashComponent() {
                                 {message?.userId?.name}
                               </h4>
                               <span className="text-xs text-gray-500 ml-2">
-                                {new Date(message?.lastMessage?.date).toLocaleString('en-US', {
-                                  hour: 'numeric',
-                                  minute: 'numeric',
-                                  hour12: true,
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric',
-                                })}
+                                {message?.lastMessage?.date
+                                  ? new Date(message.lastMessage.date).toLocaleString('en-US', {
+                                      hour: 'numeric',
+                                      minute: 'numeric',
+                                      hour12: true,
+                                      day: 'numeric',
+                                      month: 'short',
+                                      year: 'numeric',
+                                    })
+                                  : ""}
                               </span>
                             </div>
                             <p className="text-sm text-gray-700 leading-relaxed">
